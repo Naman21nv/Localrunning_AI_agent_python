@@ -10,6 +10,9 @@ before asking it to "Generate" an answer.
 """
 from langchain_ollama import OllamaLLM # Used to connect to local LLMs via Ollama
 from langchain_core.prompts import PromptTemplate # Used to structure instructions for the AI
+from vector import retriever # This is our connection to the vector database we built in vector.py
+
+
 
 # 1. INITIALIZE THE MODEL
 # We use a local model (llama3.2) so data stays on our machine and runs for free.
@@ -41,7 +44,12 @@ while True:
     if question.lower() == "x":
         break
     
-    # .invoke() triggers the chain. Right now, "reviews" is an empty list.
-    # In the next step of our project, we will fetch real reviews from our Vector Database!
-    result=chain.invoke({"reviews":[],"question":question})
+    # 5. RETRIEVAL (The 'R' in RAG)
+    # We pass the user's question to our retriever. It converts the question into a vector,
+    # searches our Chroma database for the most mathematically similar reviews, and returns them.
+    reviews=retriever.invoke(question)
+    
+    # 6. GENERATION (The 'G' in RAG)
+    # We pass the dynamically retrieved reviews AND the user's question into our Prompt/LLM chain.
+    result=chain.invoke({"reviews": reviews, "question": question})
     print(result)

@@ -6,6 +6,11 @@ Language models don't "read" words like humans; they understand numbers.
 that capture the core meaning of the sentence. We then save these vectors into a database (Chroma). 
 Later, when a user asks a question, we convert their question into a vector, and find the reviews with the closest matching numbers!
 """
+import warnings
+
+# Suppress the Pydantic V1 compatibility warning from LangChain Core for Python 3.14+
+warnings.filterwarnings("ignore", category=UserWarning, module="langchain_core")
+
 from langchain_ollama import OllamaEmbeddings  #  used to take text and convert it into a vector representation
 from langchain_chroma import Chroma
 from langchain_core.documents import Document
@@ -49,9 +54,12 @@ vector_store=Chroma(
 if add_documents:  #if not exist we shld add orelse we no need to add again
     # Adding documents is the heaviest process because the embedding model has to run on every single row.
     vector_store.add_documents(documents=documents, ids=ids)
-    # persist() ensures the data is written from RAM to your hard drive
-    vector_store.persist()
 
+
+retriever =vector_store.as_retriever(
+    search_kwargs={"k": 5}          #when we search for something this will search for the 5 most similar reviews in the vector database and return those to us (kwarg means keyword args  )
+    
+)
 
 
     
